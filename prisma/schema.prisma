@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -13,45 +8,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuario {
+model User {
   id        String   @id @default(cuid())
-  nome      String
+  name      String
   email     String   @unique
-  senha     String
-  criadoEm  DateTime @default(now())
+  password  String
+  createdAt DateTime @default(now())
 
-  contas     Conta[]
-  categorias Categoria[]
+  accounts   Account[]
+  categories Category[]
 }
 
-model Conta {
-  id       String @id @default(cuid())
-  nome     String
-  usuarioId String
-  usuario  Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+model Account {
+  id     String @id @default(cuid())
+  name   String
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  transacoes Transacao[]
+  transactions Transaction[]
 }
 
-model Categoria {
-  id        String @id @default(cuid())
-  nome      String
-  usuarioId String
-  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+model Category {
+  id     String @id @default(cuid())
+  name   String
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  transacoes Transacao[]
+  transactions Transaction[]
 }
 
-model Transacao {
+model Transaction {
   id          String   @id @default(cuid())
-  descricao   String
-  valor       Float
-  tipo        String
-  data        DateTime @default(now())
+  description String
+  amount      Float
+  type        String
+  date        DateTime @default(now())
 
-  contaId     String
-  conta       Conta     @relation(fields: [contaId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  categoriaId String
-  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }

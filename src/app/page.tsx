@@ -1,26 +1,26 @@
 import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
-  // Cria um usuário de teste no banco (só pra confirmar que a conexão funciona)
-  await prisma.usuario.create({
+  // Creates a test user in the database (just to confirm the connection works)
+  await prisma.user.create({
     data: {
-      nome: "Rodrigo Teste",
-      email: `teste-${Date.now()}@exemplo.com`,
-      senha: "123456",
+      name: "Rodrigo Test",
+      email: `test-${Date.now()}@example.com`,
+      password: "123456",
     },
   });
 
-  // Busca todos os usuários que existem no banco
-  const usuarios = await prisma.usuario.findMany();
+  // Fetches all users from the database
+  const users = await prisma.user.findMany();
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Teste de conexão com o banco</h1>
-      <p>Usuários encontrados: {usuarios.length}</p>
+      <h1>Database connection test</h1>
+      <p>Users found: {users.length}</p>
       <ul>
-        {usuarios.map((usuario) => (
-          <li key={usuario.id}>
-            {usuario.nome} — {usuario.email}
+        {users.map((user) => (
+          <li key={user.id}>
+            {user.name} — {user.email}
           </li>
         ))}
       </ul>
