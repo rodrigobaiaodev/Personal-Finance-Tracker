@@ -16,19 +16,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!email || !password) return null;
 
-        // Looks for the user in the database by email
         const user = await prisma.user.findUnique({
           where: { email },
         });
 
         if (!user) return null;
 
-        // Compares the typed password with the saved hash
         const passwordMatches = await bcrypt.compare(password, user.password);
 
         if (!passwordMatches) return null;
 
-        // Returns the user data that will be stored in the session
         return {
           id: user.id,
           name: user.name,
@@ -42,5 +39,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
   },
 });
