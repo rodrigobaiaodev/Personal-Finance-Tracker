@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { ArrowDownToLine, ArrowUpFromLine, Wallet as WalletIcon } from "lucide-react";"lucide-react";
 
 interface Account {
   id: string;
@@ -15,7 +16,7 @@ interface Summary {
   categoryBreakdown: { name: string; value: number }[];
 }
 
-const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];
+const CHART_COLORS = ["#2DD4BF", "#818CF8", "#FB7185", "#FBBF24", "#60A5FA", "#A78BFA"];
 
 export default function DashboardPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -25,14 +26,12 @@ export default function DashboardPage() {
 
   async function loadAccounts() {
     const response = await fetch("/api/accounts");
-    const data = await response.json();
-    setAccounts(data);
+    setAccounts(await response.json());
   }
 
   async function loadSummary() {
     const response = await fetch("/api/summary");
-    const data = await response.json();
-    setSummary(data);
+    setSummary(await response.json());
   }
 
   useEffect(() => {
@@ -61,66 +60,129 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 700, margin: "0 auto" }}>
-      <h1>Dashboard</h1>
+    <div className="p-10 max-w-5xl">
+      <h1 className="font-[family-name:var(--font-sora)] text-2xl font-semibold text-[#F4F6F8] mb-8">
+        Overview
+      </h1>
 
       {summary && (
-        <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
-          <div style={{ flex: 1, padding: "1rem", background: "#1e293b", borderRadius: 8 }}>
-            <p>Income</p>
-            <strong style={{ color: "#22c55e" }}>{summary.totalIncome.toFixed(2)}</strong>
-          </div>
-          <div style={{ flex: 1, padding: "1rem", background: "#1e293b", borderRadius: 8 }}>
-            <p>Expense</p>
-            <strong style={{ color: "#ef4444" }}>{summary.totalExpense.toFixed(2)}</strong>
-          </div>
-          <div style={{ flex: 1, padding: "1rem", background: "#1e293b", borderRadius: 8 }}>
-            <p>Balance</p>
-            <strong>{summary.balance.toFixed(2)}</strong>
-          </div>
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <SummaryCard
+            label="Income"
+            value={summary.totalIncome}
+            icon={<ArrowDownToLine size={16} className="text-[#2DD4BF]" />}   // Income
+            accent="#2DD4BF"
+          />
+          <SummaryCard
+            label="Expense"
+            value={summary.totalExpense}
+            icon={<ArrowUpFromLine size={16} className="text-[#FB7185]" />}   // Expense
+            accent="#FB7185"
+          />
+          <SummaryCard
+            label="Balance"
+            value={summary.balance}
+            icon={<WalletIcon size={16} className="text-[#818CF8]" />}
+            accent="#818CF8"
+          />
         </div>
       )}
 
-      {summary && summary.categoryBreakdown.length > 0 && (
-        <div style={{ height: 300, marginBottom: "2rem" }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={summary.categoryBreakdown}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={100}
-                label
+      <div className="grid grid-cols-2 gap-4 mb-10">
+        {/* Chart panel */}
+        <div className="bg-[#131A22] border border-[#232E3A] rounded-2xl p-6">
+          <p className="text-sm text-[#8A98A8] mb-4">Spending by category</p>
+          {summary && summary.categoryBreakdown.length > 0 ? (
+            <div className="h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={summary.categoryBreakdown}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={3}
+                  >
+                    {summary.categoryBreakdown.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "#0B0F14", border: "1px solid #232E3A", borderRadius: 8 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-sm text-[#8A98A8] py-16 text-center">No expenses yet.</p>
+          )}
+        </div>
+
+        {/* Accounts panel */}
+        <div className="bg-[#131A22] border border-[#232E3A] rounded-2xl p-6">
+          <p className="text-sm text-[#8A98A8] mb-4">Accounts</p>
+
+          <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="New account"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="flex-1 bg-[#0B0F14] border border-[#232E3A] rounded-lg px-3 py-2 text-sm text-[#F4F6F8] placeholder-[#8A98A8] outline-none focus:border-[#2DD4BF]"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-[#2DD4BF] text-[#0B0F14] text-sm font-semibold"
+            >
+              Add
+            </button>
+          </form>
+
+          {error && <p className="text-[#FB7185] text-sm mb-2">{error}</p>}
+
+          <ul className="flex flex-col gap-2">
+            {accounts.map((account) => (
+              <li
+                key={account.id}
+                className="flex items-center gap-2 text-sm text-[#F4F6F8] px-3 py-2 bg-[#0B0F14] rounded-lg"
               >
-                {summary.categoryBreakdown.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+                <WalletIcon size={14} className="text-[#8A98A8]" />
+                {account.name}
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      <h2>My Accounts</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
-        <input
-          type="text"
-          placeholder="Account name (e.g. Wallet, Bank)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button type="submit">Add</button>
-      </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <ul>
-        {accounts.map((account) => (
-          <li key={account.id}>{account.name}</li>
-        ))}
-      </ul>
+function SummaryCard({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  accent: string;
+}) {
+  return (
+    <div className="bg-[#131A22] border border-[#232E3A] rounded-2xl p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: `${accent}1A` }}
+        >
+          {icon}
+        </div>
+        <span className="text-sm text-[#8A98A8]">{label}</span>
+      </div>
+      <p className="font-[family-name:var(--font-mono)] text-2xl text-[#F4F6F8] tabular-nums">
+        {value.toFixed(2)}
+      </p>
     </div>
   );
 }

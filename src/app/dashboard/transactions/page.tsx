@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
 interface Account {
   id: string;
@@ -36,20 +37,15 @@ export default function TransactionsPage() {
 
   async function loadTransactions() {
     const response = await fetch("/api/transactions");
-    const data = await response.json();
-    setTransactions(data);
+    setTransactions(await response.json());
   }
-
   async function loadAccounts() {
     const response = await fetch("/api/accounts");
-    const data = await response.json();
-    setAccounts(data);
+    setAccounts(await response.json());
   }
-
   async function loadCategories() {
     const response = await fetch("/api/categories");
-    const data = await response.json();
-    setCategories(data);
+    setCategories(await response.json());
   }
 
   useEffect(() => {
@@ -79,70 +75,106 @@ export default function TransactionsPage() {
     loadTransactions();
   }
 
+  const inputStyle =
+    "bg-[#0B0F14] border border-[#232E3A] rounded-lg px-3 py-2 text-sm text-[#F4F6F8] placeholder-[#8A98A8] outline-none focus:border-[#2DD4BF]";
+
   return (
-    <div style={{ padding: "2rem", maxWidth: 600, margin: "0 auto" }}>
-      <h1>Transactions</h1>
+    <div className="p-10 max-w-3xl">
+      <h1 className="font-[family-name:var(--font-sora)] text-2xl font-semibold text-[#F4F6F8] mb-8">
+        Transactions
+      </h1>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
-        <select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-          <option value="">Select account</option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>{account.name}</option>
-          ))}
-        </select>
+      <div className="bg-[#131A22] border border-[#232E3A] rounded-2xl p-6 mb-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+          <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={inputStyle}>
+            <option value="">Select account</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
 
-        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-          <option value="">Select category</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>{category.name}</option>
-          ))}
-        </select>
+          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputStyle}>
+            <option value="">Select category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
 
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+          <input
+            type="text"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={inputStyle}
+          />
 
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
+          <input
+            type="number"
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className={inputStyle}
+          />
 
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
+          <select value={type} onChange={(e) => setType(e.target.value)} className={inputStyle}>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
 
-        <button type="submit">Add Transaction</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-[#2DD4BF] text-[#0B0F14] text-sm font-semibold"
+          >
+            Add Transaction
+          </button>
+        </form>
 
-      <table border={1} cellPadding={8} style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Account</th>
-            <th>Category</th>
-            <th>Type</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id}>
-              <td>{t.description}</td>
-              <td>{t.account.name}</td>
-              <td>{t.category.name}</td>
-              <td>{t.type}</td>
-              <td>{t.amount.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        {error && <p className="text-[#FB7185] text-sm mt-3">{error}</p>}
+      </div>
+
+      <div className="bg-[#131A22] border border-[#232E3A] rounded-2xl overflow-hidden">
+        {transactions.length === 0 ? (
+          <p className="text-sm text-[#8A98A8] text-center py-10">No transactions yet.</p>
+        ) : (
+          <ul>
+            {transactions.map((t) => {
+              const isIncome = t.type === "income";
+              return (
+                <li
+                  key={t.id}
+                  className="flex items-center justify-between px-5 py-4 border-l-2"
+                  style={{ borderLeftColor: isIncome ? "#2DD4BF" : "#FB7185" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: isIncome ? "#2DD4BF1A" : "#FB71851A" }}
+                    >
+                      {isIncome ? (
+                       <ArrowDownToLine size={15} className="text-[#2DD4BF]" />
+                          ) : (
+                        <ArrowUpFromLine size={15} className="text-[#FB7185]" />
+                          )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#F4F6F8]">{t.description}</p>
+                      <p className="text-xs text-[#8A98A8]">
+                        {t.account.name} · {t.category.name}
+                      </p>
+                    </div>
+                  </div>
+                  <p
+                    className="font-[family-name:var(--font-mono)] text-sm tabular-nums"
+                    style={{ color: isIncome ? "#2DD4BF" : "#FB7185" }}
+                  >
+                    {isIncome ? "+" : "−"}{t.amount.toFixed(2)}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
