@@ -38,7 +38,7 @@ A full-stack personal finance dashboard where users track accounts, categorize t
 
 ```bash
 git clone <repo-url>
-cd controle-financeiro
+cd Personal-Finance-Tracker
 npm install
 ```
 
