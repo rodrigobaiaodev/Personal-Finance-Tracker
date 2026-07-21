@@ -4,8 +4,6 @@ A full-stack personal finance dashboard where users track accounts, categorize t
 
 ## Live Demo
 
-*(link coming after deploy)*
-
 ## Features
 
 - **Authentication** — secure sign up / sign in with hashed passwords (bcrypt) and JWT sessions (NextAuth.js)
